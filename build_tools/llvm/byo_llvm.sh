@@ -31,6 +31,8 @@
 TD="$(cd $(dirname $0) && pwd)"
 REPO_ROOT="$(cd $TD/../.. && pwd)"
 
+IREE_BUILD_TYPE="${IREE_BUILD_TYPE:-Release}"
+
 LLVM_SOURCE_DIR="${LLVM_SOURCE_DIR:-${REPO_ROOT}/third_party/llvm-project}"
 IREE_BYOLLVM_BUILD_DIR="${IREE_BYOLLVM_BUILD_DIR:-${REPO_ROOT}/../iree-byollvm-build}"
 IREE_BYOLLVM_INSTALL_DIR="${IREE_BYOLLVM_INSTALL_DIR:-${REPO_ROOT}/../iree-byollvm-install}"
@@ -45,6 +47,7 @@ echo "Paths canonicalized as:"
 echo "LLVM_SOURCE_DIR=${LLVM_SOURCE_DIR}"
 echo "IREE_BYOLLVM_BUILD_DIR=${IREE_BYOLLVM_BUILD_DIR}"
 echo "IREE_BYOLLVM_INSTALL_DIR=${IREE_BYOLLVM_INSTALL_DIR}"
+echo "IREE_BUILD_TYPE=${IREE_BUILD_TYPE}"
 
 command="$1"
 shift
@@ -87,13 +90,14 @@ do_build_llvm() {
   targets_to_build="${LLVM_TARGETS_TO_BUILD:-X86}"
 
   cmake_options="-DLLVM_TARGETS_TO_BUILD='${targets_to_build}'"
-  cmake_options="${cmake_options} -DCMAKE_BUILD_TYPE=Release"
+  cmake_options="${cmake_options} -DCMAKE_BUILD_TYPE='${IREE_BUILD_TYPE}'"
   cmake_options="${cmake_options} -C $TD/llvm_config.cmake"
   cmake_options="${cmake_options} -DCMAKE_INSTALL_PREFIX=${main_install_dir}"
   cmake_options="${cmake_options} $(print_toolchain_config)"
   if $has_lld; then
     cmake_options="${cmake_options} -DLLVM_ENABLE_LLD=ON"
   fi
+  cmake_options="${cmake_options} -DLLVM_ENABLE_RTTI='ON'"
 
   echo "Source Directory: ${LLVM_SOURCE_DIR}"
   echo "Build Directory: ${main_build_dir}"
@@ -112,6 +116,7 @@ do_build_mlir() {
   mlir_install_dir="${IREE_BYOLLVM_INSTALL_DIR}/mlir"
 
   cmake_options="-DLLVM_DIR='${main_install_dir}/lib/cmake/llvm'"
+  cmake_options="${cmake_options} -DCMAKE_BUILD_TYPE='${IREE_BUILD_TYPE}'"
   cmake_options="${cmake_options} -DPython3_EXECUTABLE='$(which $python3_command)'"
   cmake_options="${cmake_options} -DMLIR_ENABLE_BINDINGS_PYTHON=ON"
   cmake_options="${cmake_options} -DCMAKE_INSTALL_PREFIX=${mlir_install_dir}"
@@ -174,7 +179,7 @@ do_build_iree() {
   cmake_options="${cmake_options} -DIREE_HAL_DRIVER_DEFAULTS=OFF"
   cmake_options="${cmake_options} -DIREE_HAL_DRIVER_LOCAL_SYNC=ON"
   cmake_options="${cmake_options} -DIREE_HAL_DRIVER_LOCAL_TASK=ON"
-  cmake_options="${cmake_options} -DCMAKE_BUILD_TYPE=Release"
+  cmake_options="${cmake_options} -DCMAKE_BUILD_TYPE='${IREE_BUILD_TYPE}'"
   cmake_options="${cmake_options} $(print_toolchain_config)"
   if $has_lld; then
     cmake_options="${cmake_options} -DIREE_ENABLE_LLD=ON"

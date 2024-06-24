@@ -26,6 +26,8 @@
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
 
+#include "mlir/Dialect/Bufferization/Extensions/AllExtensions.h"
+
 using namespace llvm;
 using namespace mlir;
 
@@ -144,6 +146,7 @@ int ireeOptRunMain(int argc, char **argv) {
 
   mlir::DialectRegistry registry;
   mlir::iree_compiler::registerAllDialects(registry);
+  mlir::bufferization::registerAllExtensions(registry);
   mlir::iree_compiler::registerAllPasses();
 
   // Register the pass to drop embedded transform dialect IR.

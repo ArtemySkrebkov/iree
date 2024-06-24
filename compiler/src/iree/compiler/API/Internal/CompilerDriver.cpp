@@ -75,6 +75,7 @@
 #include "mlir/Parser/Parser.h"
 #include "mlir/Support/FileUtilities.h"
 #include "mlir/Support/LogicalResult.h"
+#include "mlir/Dialect/Bufferization/Extensions/AllExtensions.h"
 
 #ifdef IREE_HAVE_C_OUTPUT_FORMAT
 #include "iree/compiler/Dialect/VM/Target/C/CModuleTarget.h"
@@ -253,6 +254,7 @@ GlobalInit::GlobalInit() : threadPool(getGlobalThreadPoolStrategy()) {
 
   // MLIRContext registration and hooks.
   mlir::iree_compiler::registerAllDialects(registry);
+  mlir::bufferization::registerAllExtensions(registry);
   mlir::iree_compiler::registerLLVMIRTranslations(registry);
 
   if (!pluginManager.loadAvailablePlugins()) {
